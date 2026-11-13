@@ -238,7 +238,31 @@ export default function AddPage() {
         // Handle server-side duplicate check (MS12)
         setAlert({
           type: 'error',
-          message: res.data?.message || 'Employee already exists.'
+          message: res.data?.message || 'Record already exists.'
+        });
+      } else if (res?.status === 400) {
+        // Handle Spring Boot validation or bad request errors
+        if (res.data?.errors && Array.isArray(res.data.errors) && res.data.errors.length > 0) {
+          setAlert({
+            type: 'error',
+            message: res.data.errors.join(' | ')
+          });
+        } else if (res.data?.message) {
+          setAlert({
+            type: 'error',
+            message: res.data.message
+          });
+        } else {
+          setAlert({
+            type: 'error',
+            message: 'Duplicate record name or invalid input data.'
+          });
+        }
+      } else if (!res) {
+        // Network / CORS / Backend unreachable
+        setAlert({
+          type: 'error',
+          message: 'Network error: Cannot reach backend server (port 8080) or CORS blocked.'
         });
       } else {
         // Generic server error (MS06)
