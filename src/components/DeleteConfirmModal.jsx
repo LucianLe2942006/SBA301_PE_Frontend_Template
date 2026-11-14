@@ -7,26 +7,17 @@ import { Modal, Button } from 'react-bootstrap';
 export default function DeleteConfirmModal({ show, item, onConfirm, onCancel }) {
   if (!item) return null;
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 1]: ENTITY NOUN / LABEL
+  // ==================== [START: MODIFY 1 - ENTITY NOUN] ====================
   // - PURPOSE: Sets the entity noun in: "Are you sure you want to delete <entity> "<Name>"?"
-  // - IMPACT: Ensures the dialog prompt matches the Screen 2 mockup exactly.
-  // - EXAMPLES:
-  //   * Employee: 'employee'
-  //   * Restaurant: 'restaurant'
-  //   * Ingredient: 'ingredient'
-  // -----------------------------------------------------------------------
+  // - EXAMPLES: 'employee' | 'restaurant' | 'shoes' | 'ingredient'
   const ENTITY_LABEL = 'employee';
+  // ==================== [END OF MODIFY 1] ====================
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 2]: DISPLAY NAME PROPERTY
-  // - PURPOSE: Extracts the human-readable name of the target row to display inside quotes.
-  // - EXAMPLES:
-  //   * Employee: item.fullName
-  //   * Restaurant: item.restaurantName
-  //   * Ingredient: item.ingredientName
-  // -----------------------------------------------------------------------
-  const itemName = item.fullName || item.restaurantName || item.ingredientName || '';
+  // ==================== [START: MODIFY 2 - DISPLAY NAME PROPERTY] ====================
+  // - PURPOSE: Extracts the human-readable name of the target row to display inside quotes
+  // - EXAMPLES: item.fullName | item.restaurantName | item.shoesName | item.name
+  const itemName = item.fullName || item.restaurantName || item.shoesName || item.ingredientName || '';
+  // ==================== [END OF MODIFY 2] ====================
 
   return (
     <Modal show={show} onHide={onCancel} centered backdrop="static">

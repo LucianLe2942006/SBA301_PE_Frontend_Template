@@ -444,6 +444,30 @@ Trước khi xóa `node_modules` và nén zip, hãy tự chấm điểm ứng d�
 - **Tác dụng:** Khớp với kiểu dữ liệu `Long`, `Integer`, `Float` của Java DTO bên Spring Boot.
 - **Nếu quên ép kiểu:** Backend Spring Boot trả về lỗi `400 Bad Request / Type Mismatch` ➔ Thêm mới thất bại.
 
+### 8. 🚨 [CỰC KỲ NGUY HIỂM] Khớp trường Phân trang: `data.currentPage` vs `data.pageNumber` (Trong ListPage)
+- **Ý nghĩa:** Tên thuộc tính số trang hiện tại mà DTO của Backend trả về (`PageResponse.java` hoặc `PageDTO.java`).
+- **Tác dụng:** Cập nhật trang hiện tại vào state `currentPage` để UI highlight đúng nút trang (Trang 1, 2, 3...) và tính đúng số thứ tự STT.
+- **Nếu đặt sai (ví dụ code đọc `data.pageNumber` nhưng backend trả về `currentPage`):**
+  - Biến sẽ thành `undefined` ➔ `data.pageNumber || 0` luôn trả về `0`.
+  - **Hậu quả:** Người dùng bấm sang Trang 2, nhưng state lập tức bị reset về Trang 0 ➔ **Nút Trang 2 không bao giờ sáng, giao diện vẫn báo `Page 1 / 2`, STT vẫn từ 1-5, nút Prev luôn bị disable!**
+- **Giải pháp an toàn tuyệt đối:**
+  ```javascript
+  const pageIndex = data.currentPage ?? data.pageNumber ?? data.number ?? 0;
+  setCurrentPage(pageIndex);
+  ```
+
+### 9. 🚨 [BẪY ĐỀ THI] Endpoint tìm kiếm riêng biệt (`/search` vs `/`)
+- **Ý nghĩa:** Có những đề PE, Backend viết Controller tách riêng 2 endpoint:
+  - `GET /api/shoes`: Chỉ lấy tất cả (hardcode `null, null` cho tìm kiếm, bỏ qua query params).
+  - `GET /api/shoes/search`: Mới thực sự nhận `@RequestParam` tìm kiếm và lọc.
+- **Cách phòng tránh:** Mở ngay file Controller Java tương ứng (ví dụ `ShoesController.java`), tìm đến phương thức `@GetMapping` để xem method nào nhận `@RequestParam(required = false) String name`. Nếu nó nằm ở `/search` thì gọi endpoint `/search`!
+
+### 10. 🚨 [BẪY ĐỀ THI] Filter Category theo ID hay theo Tên chuỗi (Name)?
+- **Ý nghĩa:** Kiểm tra xem Backend lọc theo kiểu dữ liệu gì:
+  - Nếu Controller nhận `@RequestParam Long categoryId` hoặc service gọi `findByCategoryId(...)`: Phải gửi ID (`<option value={sec.categoryId}>`).
+  - Nếu Controller nhận `@RequestParam String category` hoặc service gọi `findByCategoryCategoryNameContainingIgnoreCase(...)`: Phải gửi TÊN (`<option value={sec.categoryName}>`).
+- **Nếu gửi nhầm ID cho method tìm kiếm theo Tên:** Backend sẽ tìm danh mục có tên chứa `"1"`, kết quả trả về rỗng (`No records found`).
+
 
 ---
 

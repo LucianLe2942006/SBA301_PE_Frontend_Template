@@ -11,15 +11,19 @@ export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 1]: API ENDPOINT & SCREEN TITLE
-  // - API_BASE: Fetches the single entity by ID via GET ${API_BASE}/${id}.
-  //   * Impact: If incorrect, detail view fails with 404 Not Found.
-  //   * Examples: '/api/employees' | '/api/restaurants' | '/api/ingredients'
-  // - TITLE: The page heading matching Screen 3 mockup (e.g., 'Employee Details' | 'VIEW DETAILS').
-  // -----------------------------------------------------------------------
+  // ==================== [START: MODIFY 1 - API & SCREEN TITLE] ====================
+  // - API_BASE: Endpoint to fetch single entity by ID (GET ${API_BASE}/${id})
+  // - TITLE: Heading matching Screen 3 mockup (e.g. 'Employee Details' | 'VIEW DETAILS')
   const API_BASE = '/api/employees';
   const TITLE = 'Employee Details';
+  // ==================== [END OF MODIFY 1] ====================
+
+  // Helper: Format raw backend date (ISO string/timestamp) to 'YYYY-MM-DD'
+  const formatDate = (val) => {
+    if (!val) return '';
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+  };
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -59,13 +63,9 @@ export default function DetailPage() {
             <p className="text-danger">Item not found.</p>
           ) : (
             <div>
-              {/* 
-                [MODIFY HERE 2]: DETAIL DISPLAY ROWS (<Row>)
-                - PURPOSE: Renders all attributes in read-only mode per the Screen 3 mockup.
-                - STRUCTURE:
-                  * Col sm={4}: Field title / label (bold).
-                  * Col sm={8}: Field value retrieved from 'item'.
-              */}
+              {/* ==================== [START: MODIFY 2 - DETAIL DISPLAY ROWS] ==================== */}
+              {/* - PURPOSE: Display each attribute from backend object 'item' in read-only mode */}
+              {/* - TIP: If backend date has timestamp (e.g. 2026-11-14T00:00:00), wrap in formatDate(item.date) */}
               <Row className="py-2 border-bottom">
                 <Col sm={4} className="fw-bold text-secondary">Full Name:</Col>
                 <Col sm={8}>{item.fullName}</Col>
@@ -102,12 +102,12 @@ export default function DetailPage() {
 
               <Row className="py-2 border-bottom">
                 <Col sm={4} className="fw-bold text-secondary">Date of Birth:</Col>
-                <Col sm={8}>{item.dateOfBirth}</Col>
+                <Col sm={8}>{formatDate(item.dateOfBirth)}</Col>
               </Row>
 
               <Row className="py-2 border-bottom">
                 <Col sm={4} className="fw-bold text-secondary">Start Date:</Col>
-                <Col sm={8}>{item.startDate}</Col>
+                <Col sm={8}>{formatDate(item.startDate)}</Col>
               </Row>
 
               <Row className="py-2 border-bottom">
@@ -116,6 +116,7 @@ export default function DetailPage() {
                   {item.salary !== undefined ? Number(item.salary).toLocaleString() : ''}
                 </Col>
               </Row>
+              {/* ==================== [END OF MODIFY 2] ==================== */}
 
               {/* 
               [RESTAURANT EXAMPLE (SP26)]:

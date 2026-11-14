@@ -12,23 +12,19 @@ export default function ListPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 1]: API ENDPOINTS & PRIMARY KEY CONFIGURATION
-  // - API_BASE: The main REST API endpoint for fetching/deleting entities.
-  //   * Impact: If incorrect, browser receives 404 Not Found and table is empty.
-  //   * Examples: '/api/employees' | '/api/restaurants' | '/api/ingredients'
-  // - API_SECONDARY: Endpoint for populating the category/department dropdown.
-  //   * Examples: '/api/departments' | '/api/categories'
-  // - ID_FIELD: The unique identifier property name in backend JSON objects.
-  //   * Vital Impact: Used for delete requests (/api/.../{id}) and route navigation (/view/{id}).
-  //   * If wrong: ID becomes 'undefined', which breaks both View and Delete operations!
-  //   * Examples: 'employeeId' (Employee) | 'id' (Restaurant / Ingredient)
-  // - SCREEN_TITLE: The heading displayed above the search filter bar.
-  // -----------------------------------------------------------------------
+  // ==================== [START: MODIFY 1 - API & PRIMARY KEY] ====================
+  // 🚨 [BACKEND CHECK 1]: API ENDPOINTS & PRIMARY KEY ID
+  // - ENDPOINT TRAP: Check Java Controller @GetMapping methods.
+  //   * If search has a separate route (e.g. '/api/shoes/search'), you MUST call it!
+  //   * If base route (e.g. '/api/shoes') ignores params, calling it won't filter!
+  // - ID_FIELD: Check Entity / Response DTO for the exact key name:
+  //   * Examples: 'employeeId' | 'shoesId' | 'id' (Wrong name breaks View/Delete!)
+  // =========================================================================
   const API_BASE = '/api/employees';
   const API_SECONDARY = '/api/departments';
   const ID_FIELD = 'employeeId';
   const SCREEN_TITLE = 'Employee List';
+  // ==================== [END OF MODIFY 1] ====================
 
   // Search & filter state
   const [searchName, setSearchName] = useState('');
@@ -42,6 +38,13 @@ export default function ListPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  // Helper: Format raw backend date (ISO string/timestamp) to 'YYYY-MM-DD' for table display
+  const formatDate = (val) => {
+    if (!val) return '';
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+  };
 
   // System alert & delete modal state
   const [alert, setAlert] = useState(location.state?.alert || null);
@@ -75,25 +78,31 @@ export default function ListPage() {
         params.name = name.trim();
       }
 
-      // -------------------------------------------------------------------
-      // [MODIFY HERE 2]: CATEGORY FILTER QUERY PARAMETER
-      // - PURPOSE: Query param name expected by Spring Boot @RequestParam.
-      // - IMPACT:
-      //   * Employee: Java controller expects 'departmentId' -> params.departmentId = secId;
-      //   * Restaurant / Ingredient: Java expects 'categoryId' -> params.categoryId = secId;
-      //   * If wrong: Backend ignores the filter and returns all un-filtered records.
-      // -------------------------------------------------------------------
+      // ==================== [START: MODIFY 2 - CATEGORY FILTER PARAM] ====================
+      // 🚨 [BACKEND CHECK 2]: CATEGORY FILTER QUERY PARAM NAME
+      // - Check Java Controller @RequestParam name:
+      //   * Examples: 'departmentId', 'categoryId', or just 'category'?
+      //   * If wrong: Backend ignores the filter and returns all un-filtered data!
+      // =========================================================================
       if (secId) {
         params.departmentId = secId;
       }
+      // ==================== [END OF MODIFY 2] ====================
 
       const res = await axiosClient.get(API_BASE, { params });
       const data = res.data;
 
-      // Spring Boot PageDTO structure: { content, pageNumber, totalPages, totalElements }
+      // ==================== [START: MODIFY 3 - PAGINATION RESPONSE] ====================
+      // 🚨 [BACKEND CHECK 3]: PAGINATION CURRENT PAGE (PREVENTS PAGE 1 STUCK)
+      // - Check Java PageResponse / PageDTO field name:
+      //   * Is it 'currentPage', 'pageNumber', or 'number'?
+      //   * If wrong: data.pageNumber is undefined -> resets to 0 (cannot go to page 2)!
+      //   * Safe fallback: data.currentPage ?? data.pageNumber ?? data.number ?? 0
+      // =========================================================================
       if (data && Array.isArray(data.content)) {
         setItems(data.content);
-        setCurrentPage(data.pageNumber || 0);
+        const pageIndex = data.currentPage ?? data.pageNumber ?? data.number ?? 0;
+        setCurrentPage(pageIndex);
         setTotalPages(data.totalPages || 0);
         setTotalElements(data.totalElements || 0);
       } else {
@@ -101,6 +110,7 @@ export default function ListPage() {
         setTotalPages(0);
         setTotalElements(0);
       }
+      // ==================== [END OF MODIFY 3] ====================
     } catch (err) {
       console.error('API Error:', err);
       setAlert({
@@ -181,10 +191,8 @@ export default function ListPage() {
           {/* Name search field */}
           <Col md={4} sm={12}>
             <Form.Group controlId="searchName">
-              {/* 
-                [MODIFY HERE 3]: Name input label
-                - Match the exact label from Screen 1 mockup (e.g., 'Employee Name' | 'Restaurant Name')
-              */}
+              {/* ==================== [START: MODIFY 4 - NAME INPUT LABEL] ==================== */}
+              {/* - Match the exact label from Screen 1 mockup (e.g., 'Employee Name' | 'Restaurant Name') */}
               <Form.Label className="fw-semibold">Employee Name</Form.Label>
               <Form.Control
                 type="text"
@@ -192,33 +200,37 @@ export default function ListPage() {
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
               />
+              {/* ==================== [END OF MODIFY 4] ==================== */}
             </Form.Group>
           </Col>
 
           {/* Department / Category dropdown filter */}
           <Col md={3} sm={12}>
             <Form.Group controlId="filterSecondary">
-              {/* 
-                [MODIFY HERE 4]: Dropdown label
-                - Match the exact label from Screen 1 mockup (e.g., 'Department' | 'Category')
-              */}
+              {/* ==================== [START: MODIFY 5 - DROPDOWN LABEL] ==================== */}
+              {/* - Match the exact label from Screen 1 mockup (e.g., 'Department' | 'Category') */}
               <Form.Label className="fw-semibold">Department</Form.Label>
+              {/* ==================== [END OF MODIFY 5] ==================== */}
               <Form.Select
                 value={selectedSecondaryId}
                 onChange={(e) => setSelectedSecondaryId(e.target.value)}
               >
                 <option value="">-- All --</option>
                 {secondaryList.map((sec) => (
+                  /* ==================== [START: MODIFY 6 - DROPDOWN OPTION VALUE] ==================== */
                   /* 
-                    [MODIFY HERE 5]: Dropdown option binding
-                    - value: The ID sent to the backend when selected.
-                    - text: The human-readable name displayed in the dropdown list.
-                    - Employee:   value={sec.departmentId} -> text {sec.departmentName}
-                    - Restaurant: value={sec.categoryId}   -> text {sec.categoryName}
+                    =========================================================================
+                    🚨 [BACKEND CHECK 4]: DROPDOWN VALUE (FILTER BY ID OR NAME?)
+                    - Check Java Service / Repository method:
+                      * If Java filters by ID (Long):     value={sec.id || sec.categoryId}
+                      * If Java filters by Name (String): value={sec.categoryName || sec.departmentName}
+                      * Trap: If backend matches category name, sending numeric ID returns 0 rows!
+                    =========================================================================
                   */
-                  <option key={sec.departmentId || sec.categoryId} value={sec.departmentId || sec.categoryId}>
+                  <option key={sec.id || sec.departmentId || sec.categoryId} value={sec.departmentId || sec.categoryId || sec.id}>
                     {sec.departmentName || sec.categoryName}
                   </option>
+                  /* ==================== [END OF MODIFY 6] ==================== */
                 ))}
               </Form.Select>
             </Form.Group>
@@ -253,18 +265,14 @@ export default function ListPage() {
           <thead>
             <tr>
               <th style={{ width: '60px' }}>#</th>
-              {/* 
-                [MODIFY HERE 6]: Table column headers (<th>)
-                - PURPOSE: Defines the visible column headers in the exact order specified by the exam paper.
-                - EXAMPLES:
-                  * Employee: Full Name, Department, Position, Email, Phone
-                  * Restaurant: Restaurant Name, Category, Owner, Address, Price range(đ)
-              */}
+              {/* ==================== [START: MODIFY 7 - TABLE HEADERS] ==================== */}
+              {/* - PURPOSE: Defines visible column headers matching exam paper */}
               <th>Full Name</th>
               <th>Department</th>
               <th>Position</th>
               <th>Email</th>
               <th>Phone</th>
+              {/* ==================== [END OF MODIFY 7] ==================== */}
               <th style={{ width: '160px' }}>Action</th>
             </tr>
           </thead>
@@ -288,13 +296,8 @@ export default function ListPage() {
                     {/* 1-based row index: (currentPage * pageSize + index + 1) */}
                     <td className="fw-bold">{currentPage * pageSize + index + 1}</td>
 
-                    {/* 
-                      [MODIFY HERE 7]: Table data cells (<td>)
-                      - PURPOSE: Pulls matching properties from backend object 'item' and displays them.
-                      - TIPS:
-                        * Wrap category/department in <Badge bg="info" text="dark"> for clean badge UI.
-                        * For price ranges: {item.priceFrom}-{item.priceTo}
-                    */}
+                    {/* ==================== [START: MODIFY 8 - TABLE DATA CELLS] ==================== */}
+                    {/* - PURPOSE: Pulls matching properties from backend object 'item' */}
                     <td>{item.fullName}</td>
                     <td>
                       <Badge bg="info" text="dark" className="px-2 py-1">
@@ -304,6 +307,7 @@ export default function ListPage() {
                     <td>{item.position}</td>
                     <td>{item.email}</td>
                     <td>{item.phone}</td>
+                    {/* ==================== [END OF MODIFY 8] ==================== */}
 
                     {/*
                     [RESTAURANT EXAMPLE (SP26)]:

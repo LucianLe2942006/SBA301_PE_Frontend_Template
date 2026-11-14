@@ -10,24 +10,21 @@ import SystemAlert from '../components/SystemAlert';
 export default function AddPage() {
   const navigate = useNavigate();
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 1]: API ENDPOINTS & SCREEN TITLE
+  // ==================== [START: MODIFY 1 - API ENDPOINTS & SCREEN TITLE] ====================
   // - API_BASE: Target URL for sending the HTTP POST request to create a record.
-  // - API_SECONDARY: URL to fetch options for the category/department dropdown.
-  // - TITLE: Heading matching Screen 4 mockup (e.g., 'Add New Employee' | 'Add New Restaurant').
-  // -----------------------------------------------------------------------
+  // - API_SECONDARY: URL to fetch options for category/department dropdown.
+  // - TITLE: Heading matching Screen 4 mockup (e.g. 'Add New Employee' | 'Add New Restaurant').
   const API_BASE = '/api/employees';
   const API_SECONDARY = '/api/departments';
   const TITLE = 'Add New Employee';
+  // ==================== [END OF MODIFY 1] ====================
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 2]: FORM STATE INITIALIZATION
+  // ==================== [START: MODIFY 2 - FORM STATE INITIALIZATION] ====================
   // - PURPOSE: Holds the state for two-way data binding with form inputs.
   // - MECHANISM: Every key here corresponds to the 'name' attribute of an input field.
   // - EXAMPLES:
   //   * Employee: fullName, email, phone, departmentId, position, dateOfBirth, startDate, salary
   //   * Restaurant: restaurantName, priceFrom, priceTo, address, ownerName, categoryId, openDate
-  // -----------------------------------------------------------------------
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -38,6 +35,7 @@ export default function AddPage() {
     startDate: '',
     salary: ''
   });
+  // ==================== [END OF MODIFY 2] ====================
 
   // Validation error state for individual fields
   const [errors, setErrors] = useState({});
@@ -77,15 +75,10 @@ export default function AddPage() {
     }
   };
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 3]: CLIENT-SIDE VALIDATION FUNCTION (RUBRIC COMPLIANT)
+  // ==================== [START: MODIFY 3 - CLIENT-SIDE VALIDATION] ====================
   // - PURPOSE: Runs on "Save" click before sending data to the server.
-  // - HOW IT WORKS:
-  //   * If any condition fails, write the error message into 'newErrors.<fieldName>'.
-  //   * React-Bootstrap automatically highlights the invalid field in red
-  //     and displays the error message text immediately beneath it.
-  //   * Error text MUST match the Message List (MS01 - MS12) in the exam prompt!
-  // -----------------------------------------------------------------------
+  // - HOW IT WORKS: If condition fails, set newErrors.<fieldName> = 'Error message'.
+  // - Matches rubric message codes MS01 - MS12.
   const validate = () => {
     const newErrors = {};
 
@@ -195,14 +188,11 @@ export default function AddPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  // ==================== [END OF MODIFY 3] ====================
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 4]: PAYLOAD CASTING & POST DISPATCH
-  // - PURPOSE: HTML inputs always store strings (e.g. "15000").
-  // - VITAL: Spring Boot DTO requires real numbers (Long, Integer, Float).
-  //   Always wrap numeric fields in Number(...) before sending.
+  // ==================== [START: MODIFY 4 - PAYLOAD CASTING & POST DISPATCH] ====================
+  // - VITAL: Cast numeric fields with Number(...) to match Spring Boot DTO types (Long, Integer)!
   //   If you forget Number(), Spring Boot returns "400 Bad Request / Type Mismatch"!
-  // -----------------------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert(null);
@@ -224,6 +214,7 @@ export default function AddPage() {
       };
 
       await axiosClient.post(API_BASE, payload);
+  // ==================== [END OF MODIFY 4] ====================
 
       // Display green success alert banner (MS04)
       setAlert({
@@ -287,8 +278,8 @@ export default function AddPage() {
         <Card.Body className="p-4">
           <Form onSubmit={handleSubmit} noValidate>
             <Row className="g-3">
+              {/* ==================== [START: MODIFY 5 - FORM INPUT CONTROLS] ==================== */}
               {/* 
-                [MODIFY HERE 5]: FORM INPUT CONTROLS (<Form.Group>)
                 - Each input field has:
                   * Form.Label with red asterisk for mandatory fields
                   * Form.Control with matching 'name' and 'value' bound to formData
@@ -461,6 +452,7 @@ export default function AddPage() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+              {/* ==================== [END OF MODIFY 5] ==================== */}
             </Row>
 
             {/* Save and Back buttons */}

@@ -11,20 +11,24 @@ export default function EditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 1]: API ENDPOINTS & SCREEN TITLE
+  // ==================== [START: MODIFY 1 - API ENDPOINTS & SCREEN TITLE] ====================
   // - API_BASE: Target endpoint for GET single entity and PUT update.
   // - API_SECONDARY: Endpoint for fetching department/category dropdown.
   // - TITLE: Heading displayed at the top of the update page.
-  // -----------------------------------------------------------------------
   const API_BASE = '/api/employees';
   const API_SECONDARY = '/api/departments';
   const TITLE = 'Update Employee';
+  // ==================== [END OF MODIFY 1] ====================
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 2]: FORM STATE INITIALIZATION
+  // Helper: Format raw backend date (ISO string/timestamp) to 'YYYY-MM-DD' for <input type="date">
+  const formatDate = (val) => {
+    if (!val) return '';
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+  };
+
+  // ==================== [START: MODIFY 2 - FORM STATE INITIALIZATION] ====================
   // - PURPOSE: Holds the state keys corresponding to the input form.
-  // -----------------------------------------------------------------------
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -35,6 +39,7 @@ export default function EditPage() {
     startDate: '',
     salary: ''
   });
+  // ==================== [END OF MODIFY 2] ====================
 
   const [errors, setErrors] = useState({});
   const [secondaryList, setSecondaryList] = useState([]);
@@ -62,15 +67,15 @@ export default function EditPage() {
         const res = await axiosClient.get(`${API_BASE}/${id}`);
         const data = res.data;
         if (data) {
-          // Pre-fill form fields with fetched data
+          // Pre-fill form fields with fetched data (wrap dates in formatDate for <input type="date">)
           setFormData({
             fullName: data.fullName || '',
             email: data.email || '',
             phone: data.phone || '',
             departmentId: data.departmentId || '',
             position: data.position || '',
-            dateOfBirth: data.dateOfBirth || '',
-            startDate: data.startDate || '',
+            dateOfBirth: formatDate(data.dateOfBirth),
+            startDate: formatDate(data.startDate),
             salary: data.salary || ''
 
             /*
@@ -114,10 +119,8 @@ export default function EditPage() {
     }
   };
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 3]: CLIENT-SIDE VALIDATION FUNCTION
+  // ==================== [START: MODIFY 3 - CLIENT-SIDE VALIDATION] ====================
   // - Same validation logic as AddPage to guarantee input data integrity.
-  // -----------------------------------------------------------------------
   const validate = () => {
     const newErrors = {};
 
@@ -193,11 +196,11 @@ export default function EditPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  // ==================== [END OF MODIFY 3] ====================
 
-  // -----------------------------------------------------------------------
-  // [MODIFY HERE 4]: PAYLOAD CASTING & PUT DISPATCH
+  // ==================== [START: MODIFY 4 - PAYLOAD CASTING & PUT DISPATCH] ====================
   // - Sends HTTP PUT request: PUT ${API_BASE}/${id}
-  // -----------------------------------------------------------------------
+  // - Cast numeric fields with Number(...) to match Spring Boot DTO!
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert(null);
@@ -230,6 +233,7 @@ export default function EditPage() {
 
       // Call HTTP PUT endpoint to update
       await axiosClient.put(`${API_BASE}/${id}`, payload);
+  // ==================== [END OF MODIFY 4] ====================
 
       setAlert({
         type: 'success',
@@ -291,10 +295,8 @@ export default function EditPage() {
           ) : (
             <Form onSubmit={handleSubmit} noValidate>
               <Row className="g-3">
-                {/* 
-                  [MODIFY HERE 5]: FORM INPUT CONTROLS (<Form.Group>)
-                  - Replicates form fields with pre-filled state
-                */}
+                {/* ==================== [START: MODIFY 5 - FORM INPUT CONTROLS] ==================== */}
+                {/* - Replicates form fields with pre-filled state */}
 
                 {/* Full Name field */}
                 <Col md={12}>
@@ -461,6 +463,7 @@ export default function EditPage() {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
+                {/* ==================== [END OF MODIFY 5] ==================== */}
               </Row>
 
               {/* Save changes and Back buttons */}
